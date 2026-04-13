@@ -1,8 +1,6 @@
 "use client";
 
-export { SimpleVirtualizedTimeline } from "./SimpleVirtualizedTimeline.js";
 export { AdvancedVirtualizedTimeline } from "./AdvancedVirtualizedTimeline.js";
-export type { SimpleVirtualizedTimelineConfig } from "./public/simple-virtualized-timeline.config.js";
 export type { AdvancedVirtualizedTimelineConfig } from "./public/advanced-virtualized-timeline.config.js";
 export type { VirtualizedTimelineRootProps } from "./public/virtualized-timeline-root.js";
 export { PreText } from "./PreText.js";
@@ -21,3 +19,4 @@ export type {
   TimelineRowMeta,
   TimelineRowRenderArgs,
 } from "./timeline-types.js";
+export * from "./pretext-layer/index.js";

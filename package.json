@@ -11,6 +11,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./simple": {
+      "types": "./dist/simple-entry.d.ts",
+      "import": "./dist/simple-entry.js"
+    },
+    "./advanced": {
+      "types": "./dist/advanced-entry.d.ts",
+      "import": "./dist/advanced-entry.js"
+    },
+    "./pretext": {
+      "types": "./dist/pretext-entry.d.ts",
+      "import": "./dist/pretext-entry.js"
     }
   },
   "files": [
@@ -21,10 +33,17 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "peerDependencies": {
+    "@chenglou/pretext": ">=0.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
+  "peerDependenciesMeta": {
+    "@chenglou/pretext": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@chenglou/pretext": "^0.0.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",

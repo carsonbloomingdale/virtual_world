@@ -6,7 +6,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import type { ChronoItemKey, ImageHeightStore } from "./types.js";
+import type { ImageHeightStore, TimelineItemKey } from "./timeline-types.js";
 
 type RowSlots = Map<string, number>;
 
@@ -16,7 +16,7 @@ type InternalStore = ImageHeightStore & {
 };
 
 function createStore(): InternalStore {
-  const rows = new Map<ChronoItemKey, RowSlots>();
+  const rows = new Map<TimelineItemKey, RowSlots>();
   const listeners = new Set<() => void>();
   let version = 0;
 
@@ -82,7 +82,7 @@ export function useChronoImageHeightVersion(): number {
 }
 
 /** Report intrinsic (or laid-out) image height for a slot inside a row. */
-export function useChronoImageSlot(rowKey: ChronoItemKey, slotId: string) {
+export function useChronoImageSlot(rowKey: TimelineItemKey, slotId: string) {
   const store = useContext(Ctx);
 
   const onImgLoad = useCallback(

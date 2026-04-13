@@ -22,7 +22,7 @@ These items track known gaps and next steps for `chrono-virtual`. Convert any li
 
 **Problem:** Consumers still need to remember client boundaries and scroll container patterns.
 
-**Acceptance criteria:** Minimal `app/chrono/page.tsx` example using `"use client"` wrapper, `scrollParentRef`, and image slots.
+**Acceptance criteria:** Minimal `app/timeline/page.tsx` example using `"use client"`, imports from `chrono-virtual/simple` vs `chrono-virtual/advanced`, `scrollParentRef`, and image slots.
 
 ---
 
@@ -79,3 +79,11 @@ These items track known gaps and next steps for `chrono-virtual`. Convert any li
 **Problem:** Chronological feeds often cluster by day; sticky section headers interact poorly naive absolute virtualization.
 
 **Acceptance criteria:** Optional section index map + sticky offset compensation in `offsets`.
+
+---
+
+## #11 — First-class row model: Pretext body + measured chrome
+
+**Problem:** `chrono-virtual/pretext` exposes helpers, but the timeline config does not yet accept a “row height recipe” (e.g. Pretext body + image slot sums + padding constants) as a single typed pipeline.
+
+**Acceptance criteria:** Optional `getRowHeight` / `RowVerticalBudget` integration on `AdvancedVirtualizedTimelineConfig`, docs for when DOM width observation is acceptable vs fixed column width, and golden tests against `@chenglou/pretext` `layout()` for a few fonts/widths.

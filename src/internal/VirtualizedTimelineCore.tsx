@@ -10,14 +10,13 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
-import { buildOffsets, findEndIndex, findStartIndex } from "./geometry.js";
-import { PreText } from "./PreText.js";
-import type { ChronoRenderContext, ChronoRowMeta, ChronoRowRenderArgs, ChronoVirtualProps } from "./types.js";
-import { useChronoImageHeightStore, useChronoImageHeightVersion } from "./ImageHeightContext.js";
-
-function defaultKey<T>(_item: T, index: number) {
-  return String(index);
-}
+import { buildOffsets, findEndIndex, findStartIndex } from "../geometry.js";
+import { PreText } from "../PreText.js";
+import type {
+  TimelineRenderContext,
+  TimelineRowMeta,
+  TimelineRowRenderArgs,
+} from "../timeline-types.js";
 
 function useLatest<T>(value: T | undefined) {
   const ref = useRef(value);
@@ -25,26 +24,48 @@ function useLatest<T>(value: T | undefined) {
   return ref;
 }
 
-export function ChronoVirtual<T>(props: ChronoVirtualProps<T>): ReactNode {
-  const isAdvanced = props.mode === "advanced";
+export type VirtualizedTimelineCoreProps<T> = {
+  items: readonly T[];
+  getItemKey: (item: T, index: number) => string;
+  estimateRowHeight: number;
+  overscanPx: number;
+  intersectionRootMargin: string;
+  intersectionThreshold: number | number[];
+  intersectionRoot?: RefObject<Element | null>;
+  onItemIntersect?: (meta: TimelineRowMeta<T>, entry: IntersectionObserverEntry) => void;
+  getPreText?: (meta: TimelineRowMeta<T>) => ReactNode;
+  preTextCfg?: { lines: number; lineHeightPx: number; className?: string; style?: CSSProperties };
+  getRowProps?: (meta: TimelineRowMeta<T>) => HTMLAttributes<HTMLDivElement> & Record<string, unknown>;
+  renderRow?: (args: TimelineRowRenderArgs<T>) => ReactNode;
+  className?: string;
+  style?: CSSProperties;
+  scrollParentRef?: RefObject<HTMLElement | null>;
+  renderItem: (meta: TimelineRowMeta<T>, ctx: TimelineRenderContext) => ReactNode;
+  getRowImageHeight?: (key: string) => number;
+  imageLayoutVersion: number;
+};
 
-  const items = props.items;
-  const estimateRowHeight = props.estimateRowHeight;
-  const getItemKey = isAdvanced ? props.getItemKey : defaultKey<T>;
-  const overscanPx = isAdvanced ? (props.overscanPx ?? 0) : 0;
-  const intersectionRootMargin = isAdvanced ? (props.intersectionRootMargin ?? "0px") : "0px";
-  const intersectionThreshold = isAdvanced ? (props.intersectionThreshold ?? 0) : 0;
-  const intersectionRoot = isAdvanced ? props.intersectionRoot : undefined;
-  const onItemIntersect = isAdvanced ? props.onItemIntersect : undefined;
-  const getPreText = isAdvanced ? props.getPreText : undefined;
-  const preTextCfg = isAdvanced ? props.preText : undefined;
-  const getRowProps = isAdvanced ? props.getRowProps : undefined;
-  const renderRow = isAdvanced ? props.renderRow : undefined;
-  const outerClassName = isAdvanced ? props.className : undefined;
-  const outerStyle = isAdvanced ? props.style : undefined;
-  const scrollParentRef = isAdvanced ? props.scrollParentRef : undefined;
-
-  const renderItem = props.renderItem;
+export function VirtualizedTimelineCore<T>(props: VirtualizedTimelineCoreProps<T>): ReactNode {
+  const {
+    items,
+    getItemKey,
+    estimateRowHeight,
+    overscanPx,
+    intersectionRootMargin,
+    intersectionThreshold,
+    intersectionRoot,
+    onItemIntersect,
+    getPreText,
+    preTextCfg,
+    getRowProps,
+    renderRow,
+    className: outerClassName,
+    style: outerStyle,
+    scrollParentRef,
+    renderItem,
+    getRowImageHeight,
+    imageLayoutVersion,
+  } = props;
 
   const internalScrollRef = useRef<HTMLDivElement | null>(null);
   const scrollRootRef = scrollParentRef ?? internalScrollRef;
@@ -53,9 +74,6 @@ export function ChronoVirtual<T>(props: ChronoVirtualProps<T>): ReactNode {
 
   const measuredRef = useRef<Map<string, number>>(new Map());
   const [, bumpMeasure] = useState(0);
-
-  const imageStore = useChronoImageHeightStore();
-  const imageVersion = useChronoImageHeightVersion();
 
   const keys = useMemo(
     () => items.map((item, index) => getItemKey(item, index)),
@@ -75,19 +93,28 @@ export function ChronoVirtual<T>(props: ChronoVirtualProps<T>): ReactNode {
   );
 
   const heights = useMemo(() => {
-    void imageVersion;
+    void imageLayoutVersion;
     const out: number[] = new Array(items.length);
     for (let i = 0; i < items.length; i++) {
       const key = keys[i]!;
       const measured = measuredRef.current.get(key);
-      const img = imageStore?.getRowImageHeight(key) ?? 0;
+      const img = getRowImageHeight?.(key) ?? 0;
       const floor =
         getPreText && preTextCfg ? Math.max(estimateRowHeight, preMin) : estimateRowHeight;
       const base = measured ?? floor;
       out[i] = measured != null ? measured : Math.max(base, floor + img);
     }
     return out;
-  }, [items, keys, estimateRowHeight, getPreText, preMin, preTextCfg, imageStore, imageVersion]);
+  }, [
+    items,
+    keys,
+    estimateRowHeight,
+    getPreText,
+    preMin,
+    preTextCfg,
+    getRowImageHeight,
+    imageLayoutVersion,
+  ]);
 
   const offsets = useMemo(() => buildOffsets(heights), [heights]);
   const totalHeight = offsets[offsets.length - 1] ?? 0;
@@ -142,7 +169,7 @@ export function ChronoVirtual<T>(props: ChronoVirtualProps<T>): ReactNode {
           {items.slice(start, end + 1).map((item, sliceIndex) => {
             const index = start + sliceIndex;
             const key = keys[index]!;
-            const meta: ChronoRowMeta<T> = { item, index, key };
+            const meta: TimelineRowMeta<T> = { item, index, key };
             const rowTop = offsets[index] ?? 0;
 
             return (
@@ -171,36 +198,38 @@ export function ChronoVirtual<T>(props: ChronoVirtualProps<T>): ReactNode {
 }
 
 type VirtualRowProps<T> = {
-  meta: ChronoRowMeta<T>;
+  meta: TimelineRowMeta<T>;
   top: number;
   scrollRootRef: RefObject<HTMLElement | null>;
-  getRowProps?: (meta: ChronoRowMeta<T>) => HTMLAttributes<HTMLDivElement> & Record<string, unknown>;
-  renderRow?: (args: ChronoRowRenderArgs<T>) => ReactNode;
+  getRowProps?: (meta: TimelineRowMeta<T>) => HTMLAttributes<HTMLDivElement> & Record<string, unknown>;
+  renderRow?: (args: TimelineRowRenderArgs<T>) => ReactNode;
   intersectionRoot?: RefObject<Element | null>;
   intersectionRootMargin: string;
   intersectionThreshold: number | number[];
-  onItemIntersect?: (meta: ChronoRowMeta<T>, entry: IntersectionObserverEntry) => void;
-  getPreText?: (meta: ChronoRowMeta<T>) => ReactNode;
+  onItemIntersect?: (meta: TimelineRowMeta<T>, entry: IntersectionObserverEntry) => void;
+  getPreText?: (meta: TimelineRowMeta<T>) => ReactNode;
   preTextCfg?: { lines: number; lineHeightPx: number; className?: string; style?: CSSProperties };
-  renderItem: (meta: ChronoRowMeta<T>, ctx: ChronoRenderContext) => ReactNode;
+  renderItem: (meta: TimelineRowMeta<T>, ctx: TimelineRenderContext) => ReactNode;
   reportRowHeight: (key: string, px: number) => void;
 };
 
-function VirtualRow<T>({
-  meta,
-  top,
-  scrollRootRef,
-  getRowProps,
-  renderRow,
-  intersectionRoot,
-  intersectionRootMargin,
-  intersectionThreshold,
-  onItemIntersect,
-  getPreText,
-  preTextCfg,
-  renderItem,
-  reportRowHeight,
-}: VirtualRowProps<T>) {
+function VirtualRow<T>(props: VirtualRowProps<T>) {
+  const {
+    meta,
+    top,
+    scrollRootRef,
+    getRowProps,
+    renderRow,
+    intersectionRoot,
+    intersectionRootMargin,
+    intersectionThreshold,
+    onItemIntersect,
+    getPreText,
+    preTextCfg,
+    renderItem,
+    reportRowHeight,
+  } = props;
+
   const elRef = useRef<HTMLDivElement | null>(null);
   const [intersecting, setIntersecting] = useState(false);
   const metaRef = useRef(meta);
@@ -252,7 +281,7 @@ function VirtualRow<T>({
     [meta.key, reportRowHeight],
   );
 
-  const ctx: ChronoRenderContext = useMemo(
+  const ctx: TimelineRenderContext = useMemo(
     () => ({ setMeasuredRowHeight, intersecting }),
     [intersecting, setMeasuredRowHeight],
   );

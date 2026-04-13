@@ -9,8 +9,9 @@ export type PreTextProps = {
 };
 
 /**
- * Fixed-line text block so the vertical budget is known before rich content
- * (images, embeds) resolves. Pair with `lines * lineHeightPx` in height math.
+ * CSS line-clamp placeholder for a rough vertical budget (no `@chenglou/pretext`).
+ * For DOM-free multiline measurement aligned with real typography, use
+ * `chrono-virtual/pretext` (`PretextBodyBlock`, `useBodyTextBlockLayout`, etc.).
  */
 export function PreText({ children, lines, lineHeightPx, className, style }: PreTextProps) {
   const height = lines * lineHeightPx;
