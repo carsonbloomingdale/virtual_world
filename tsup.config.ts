@@ -1,0 +1,32 @@
+import { defineConfig } from "tsup";
+
+export default defineConfig({
+  entry: [
+    "src/index.ts",
+    "src/simple-entry.ts",
+    "src/advanced-entry.ts",
+    "src/pretext-entry.ts",
+    "src/pretext-layer/index.ts",
+    "src/pretext-layer/bodyTextLayout.ts",
+    "src/pretext-layer/useBodyTextBlockLayout.ts",
+    "src/pretext-layer/useContentWidthPx.ts",
+    "src/pretext-layer/rowBudget.ts",
+    "src/pretext-layer/PretextBodyBlock.tsx",
+    "src/SimpleVirtualizedTimeline.tsx",
+    "src/AdvancedVirtualizedTimeline.tsx",
+    "src/internal/VirtualizedTimelineCore.tsx",
+    "src/PreText.tsx",
+    "src/ImageHeightContext.tsx",
+    "src/geometry.ts",
+    "src/timeline-types.ts",
+    "src/public/simple-virtualized-timeline.config.ts",
+    "src/public/advanced-virtualized-timeline.config.ts",
+    "src/public/virtualized-timeline-root.ts",
+  ],
+  format: ["esm"],
+  dts: true,
+  sourcemap: true,
+  clean: true,
+  bundle: false,
+  external: ["react", "react-dom", "@chenglou/pretext"],
+});

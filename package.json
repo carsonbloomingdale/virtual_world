@@ -1,0 +1,64 @@
+{
+  "name": "chrono-virtual",
+  "version": "0.1.0",
+  "description": "Lightweight chronological list virtualization for React / Next.js (Bun-friendly)",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./simple": {
+      "types": "./dist/simple-entry.d.ts",
+      "import": "./dist/simple-entry.js"
+    },
+    "./advanced": {
+      "types": "./dist/advanced-entry.d.ts",
+      "import": "./dist/advanced-entry.js"
+    },
+    "./pretext": {
+      "types": "./dist/pretext-entry.d.ts",
+      "import": "./dist/pretext-entry.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@chenglou/pretext": ">=0.0.5",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@chenglou/pretext": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@chenglou/pretext": "^0.0.5",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "packageManager": "bun@1.1.0",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "nextjs",
+    "virtualization",
+    "virtual-list",
+    "intersection-observer",
+    "chronological"
+  ]
+}
